@@ -1,0 +1,39 @@
+#define Encoder 2
+#define PWM 5
+
+static volatile int16_t count=0;
+int RPM;
+
+int RPM_ref  = 200;
+float KP = 0.5;
+float KI = 0.5;
+float KD = 0.05;
+float error = 0;
+float past_error = 0;
+float I_error = 0;
+float D_error = 0;
+float PWM_PID = 127;
+
+void setup(){
+  Serial.begin(9600);
+  attachInterrupt(digitalPinToInterrupt(2),encoder, FALLING);
+  pinMode(PWM, OUTPUT);
+  pinMode(Encoder, INPUT_PULLUP);
+}
+void loop(){
+  analogWrite(PWM, PWM_PID);
+  delay(100);
+  count = 0;
+  delay(200);
+  RPM = count*5;
+  Serial.println(RPM);
+  
+  past_error = error;
+  error = RPM_ref - RPM;
+  I_error = past_error - error;
+  PWM_PID = KP*error + KI*I_error + KD*D_error;
+}
+
+void encoder(){
+  count++;
+}
